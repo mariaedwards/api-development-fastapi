@@ -2,6 +2,7 @@
 """
 
 from fastapi import FastAPI
+from fastapi.params import Body
 
 app = FastAPI()
 
@@ -13,4 +14,9 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"data": "List of posts"}
+    return {"message": "List of posts"}
+
+
+@app.post("/posts")
+def create_post(payload: dict = Body(...)):
+    return {"message": "Post is created", "data": f'{payload["title"]}. {payload["postBody"]}'}
