@@ -1,7 +1,7 @@
 """ Application entrypoint
 """
 
-from fastapi import FastAPI, Response, status
+from fastapi import FastAPI, status, HTTPException
 from typing import Optional
 from pydantic import BaseModel
 
@@ -43,9 +43,10 @@ def create_post(post: Post):
 
 @app.get("/posts/{post_id}")
 # fastAPI will automatically convert string to int
-def get_post(post_id: int, response: Response):
+def get_post(post_id: int):
 
     post = find_post_by_id(post_id)
     if not post:
-        response.status_code = status.HTTP_404_NOT_FOUND
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
     return {"data": post}
