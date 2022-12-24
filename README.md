@@ -92,3 +92,23 @@ Open your browser at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
 To create a body for a POST request, navigate:
 Tab `Body` -> Select `raw` -> in a dropdown select `JSON`
+
+## Request Body
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/body/)
+
+### Add schema pydantic
+
+[Documentation](https://docs.pydantic.dev/usage/schema/)
+
+```py
+from pydantic import BaseModel
+```
+
+#### Optional type hints
+
+[Documentation](https://fastapi.tiangolo.com/python-types/?h=optiona#using-union-or-optional)
+
+```py
+from typing import Optional
+```
