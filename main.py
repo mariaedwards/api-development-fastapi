@@ -1,7 +1,7 @@
 """ Application entrypoint
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from typing import Optional
 from pydantic import BaseModel
 
@@ -42,7 +42,10 @@ def create_post(post: Post):
 
 
 @app.get("/posts/{post_id}")
-def get_post(post_id: int):  # fastAPI will automatically convert string to int
+# fastAPI will automatically convert string to int
+def get_post(post_id: int, response: Response):
 
     post = find_post_by_id(post_id)
+    if not post:
+        response.status_code = status.HTTP_404_NOT_FOUND
     return {"data": post}

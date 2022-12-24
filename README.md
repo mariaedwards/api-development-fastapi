@@ -112,3 +112,60 @@ from pydantic import BaseModel
 ```py
 from typing import Optional
 ```
+
+## Order of routes
+
+FastAPI gets the first encountered match, so the order of routes is important
+E.g.
+
+```py
+@app.get("/posts/{post_id}")
+
+@app.get("/posts/something")
+```
+
+will execute `@app.get("/posts/{post_id}")` even if `/posts/something` was requested
+
+## Validation of params
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/path-params/#path-parameters-with-types)
+
+Incoming parameters are `str`. adding type checking to a handler both validates that the input can be converted to the requested type and converts it, otherwise raises error
+
+```py
+@app.get("/posts/{post_id}")
+def get_post(post_id: int):  # fastAPI will automatically convert string to int
+    post = find_post_by_id(post_id)
+    return {"data": post}
+```
+
+## Adding Status Code
+
+E.g. with get if resource is not found, adding `response` allows to change status code from `200` (default) to `404`
+
+```py
+from fastapi import FastAPI, Response
+# .....
+
+@app.get("/posts/{post_id}")
+# fastAPI will automatically convert string to int
+def get_post(post_id: int, response: Response):
+
+    post = find_post_by_id(post_id)
+    if not post:
+        response.status_code = 404
+    return {"data": post}
+
+```
+
+### Using `status` instead of hardcoding the value
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/response-status-code/?h=status#shortcut-to-remember-the-names)
+
+```py
+from fastapi import FastAPI, Response, status
+
+#...
+
+response.status_code = status.HTTP_404_NOT_FOUND
+```
