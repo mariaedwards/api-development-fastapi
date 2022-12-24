@@ -32,7 +32,7 @@ def get_posts():
     return {"data": MY_POSTS}
 
 
-@app.post("/posts")
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
     global POST_ID
     new_post = {"id": POST_ID, **post.dict()}

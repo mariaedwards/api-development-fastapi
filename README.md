@@ -169,3 +169,32 @@ from fastapi import FastAPI, Response, status
 
 response.status_code = status.HTTP_404_NOT_FOUND
 ```
+
+### Using `HTTPException` instead of `Response`
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/handling-errors/?h=httpexception#fastapis-httpexception-vs-starlettes-httpexception)
+
+```py
+from fastapi import FastAPI, status, HTTPException
+
+# ...
+
+if not post:
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
+
+```
+
+## HTTP response status codes
+
+[MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+
+### 201 Created
+
+The request succeeded, and a new resource was created as a result. This is typically the response sent **after POST** requests, or some PUT requests.
+
+Adds default status response (inside decorator)
+
+```py
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+```
