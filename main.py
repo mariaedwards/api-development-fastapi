@@ -1,18 +1,23 @@
 """ Application entrypoint
 """
 
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Response
 from typing import Optional
 from pydantic import BaseModel
 
 app = FastAPI()
 
-MY_POSTS = []
-POST_ID = 1
+MY_POSTS = [{"id": 1, "title": "Test", "content": "Test"}]
+POST_ID = 2
 
 
 def find_post_by_id(post_id):
     return next((item for item in MY_POSTS if item["id"] == post_id), None)
+
+
+def find_index_of_post_by_id(post_id):
+    return next((i for (i, item) in enumerate(
+        MY_POSTS) if item["id"] == post_id), None)
 
 
 class Post(BaseModel):
@@ -50,3 +55,15 @@ def get_post(post_id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
     return {"data": post}
+
+
+@app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+# fastAPI will automatically convert string to int
+def delete_post(post_id: int):
+    index = find_index_of_post_by_id(post_id)
+    print(index)
+    if index is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
+    MY_POSTS.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

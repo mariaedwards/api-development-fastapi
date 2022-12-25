@@ -198,3 +198,22 @@ Adds default status response (inside decorator)
 ```py
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 ```
+
+### DELETE
+
+Responses
+If a DELETE method is successfully applied, there are several response status codes possible:
+
+- A `202 (Accepted)` status code if the action will likely succeed but has not yet been enacted.
+- A `204 (No Content)` status code if the action has been enacted and no further information is to be supplied.
+- A `200 (OK`) status code if the action has been enacted and the response message includes a representation describing the status.
+
+```py
+@app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+```
+
+With FastAPI, the delete operation expects no data to return. Instead:
+
+```py
+return Response(status_code=status.HTTP_204_NO_CONTENT)
+```
