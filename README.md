@@ -1,4 +1,4 @@
-# Python API Development Course Notes (FastAPI).
+# Python API Development Course Notes (FastAPI)
 
 [Tutorial](https://www.youtube.com/watch?v=0sOvCWFmrtA&list=WL&index=2)
 
@@ -217,3 +217,9 @@ With FastAPI, the delete operation expects no data to return. Instead:
 ```py
 return Response(status_code=status.HTTP_204_NO_CONTENT)
 ```
+
+### PUT
+
+If the target resource does not have a current representation and the PUT request successfully creates one, then the origin server must inform the user agent by sending a 201 (Created) response.
+
+If the target resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server must send either a 200 (OK) or a 204 (No Content) response to indicate successful completion of the request.

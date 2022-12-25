@@ -67,3 +67,14 @@ def delete_post(post_id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
     MY_POSTS.pop(index)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{post_id}")
+# fastAPI will automatically convert string to int
+def update_post(updated_post: Post, post_id: int):
+    post = find_post_by_id(post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
+    post.update(updated_post.dict())
+    return {"data": post}
