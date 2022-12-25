@@ -223,3 +223,9 @@ return Response(status_code=status.HTTP_204_NO_CONTENT)
 If the target resource does not have a current representation and the PUT request successfully creates one, then the origin server must inform the user agent by sending a 201 (Created) response.
 
 If the target resource does have a current representation and that representation is successfully modified in accordance with the state of the enclosed representation, then the origin server must send either a 200 (OK) or a 204 (No Content) response to indicate successful completion of the request.
+
+### Auto documentation
+
+Open your browser at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) - Swagger UI
+OR
+[http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) - Redoc
