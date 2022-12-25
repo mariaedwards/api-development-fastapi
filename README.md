@@ -1,4 +1,4 @@
-# Python API Development Course Notes (FastAPI). 
+# Python API Development Course Notes (FastAPI).
 
 [Tutorial](https://www.youtube.com/watch?v=0sOvCWFmrtA&list=WL&index=2)
 
@@ -189,9 +189,9 @@ if not post:
 
 [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 
-### 201 Created
+### POST
 
-The request succeeded, and a new resource was created as a result. This is typically the response sent **after POST** requests, or some PUT requests.
+`201 Created` The request succeeded, and a new resource was created as a result. This is typically the response sent **after POST** requests, or some PUT requests.
 
 Adds default status response (inside decorator)
 
