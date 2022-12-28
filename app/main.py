@@ -2,29 +2,45 @@
 """
 
 from fastapi import FastAPI, status, HTTPException, Response
-from typing import Optional
 from pydantic import BaseModel
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import os
+from dotenv import load_dotenv
+import time
+
+MESSAGE_404 = "Item was not found"
+
+load_dotenv()
+
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
 
 app = FastAPI()
 
-MY_POSTS = [{"id": 1, "title": "Test", "content": "Test"}]
-POST_ID = 2
+while True:
+    try:
+        # Connect to your postgres DB
+        conn = psycopg2.connect(host=POSTGRES_HOST, database=POSTGRES_DB,
+                                user=POSTGRES_USER, password=POSTGRES_PASSWORD,
+                                cursor_factory=RealDictCursor)
 
-
-def find_post_by_id(post_id):
-    return next((item for item in MY_POSTS if item["id"] == post_id), None)
-
-
-def find_index_of_post_by_id(post_id):
-    return next((i for (i, item) in enumerate(
-        MY_POSTS) if item["id"] == post_id), None)
+        # Open a cursor to perform database operations
+        cur = conn.cursor()
+        print("DB connection was successful")
+        break
+    except psycopg2.Error as error:
+        print("Connection to DB failed")
+        print(error)
+        time.sleep(2)
 
 
 class Post(BaseModel):
     title: str
     content: str
-    published: bool = True
-    rating: Optional[int] = None
+    is_published: bool = True
 
 
 @app.get("/")
@@ -34,47 +50,66 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"data": MY_POSTS}
+    cur.execute("""SELECT * FROM posts""")
+    posts = cur.fetchall()
+    return {"data": posts}
 
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
 def create_post(post: Post):
-    global POST_ID
-    new_post = {"id": POST_ID, **post.dict()}
-    POST_ID = POST_ID + 1
-    MY_POSTS.append(new_post)
+    cur.execute("""
+                INSERT INTO posts (title, content, is_published)
+                VALUES (%s, %s, %s) RETURNING *
+                """,
+                [post.title, post.content, post.is_published])  # sanitization of the input
+    new_post = cur.fetchone()
+    conn.commit()  # save data
     return {"data": new_post}
 
 
 @app.get("/posts/{post_id}")
 # fastAPI will automatically convert string to int
 def get_post(post_id: int):
-
-    post = find_post_by_id(post_id)
+    cur.execute("""SELECT * FROM posts WHERE id = %s""", [str(post_id)])
+    post = cur.fetchone()
     if not post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
     return {"data": post}
 
 
 @app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 # fastAPI will automatically convert string to int
 def delete_post(post_id: int):
-    index = find_index_of_post_by_id(post_id)
-    print(index)
-    if index is None:
+    cur.execute("""
+                DELETE FROM posts
+                WHERE id = %s
+                RETURNING *
+                """,
+                [str(post_id)])
+    post = cur.fetchone()
+    conn.commit()  # save data
+    if not post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
-    MY_POSTS.pop(index)
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @app.put("/posts/{post_id}")
 # fastAPI will automatically convert string to int
 def update_post(updated_post: Post, post_id: int):
-    post = find_post_by_id(post_id)
+    cur.execute("""
+                UPDATE posts
+                SET title=%s, content=%s, is_published=%s
+                WHERE id = %s
+                RETURNING *
+                """,
+                [updated_post.title, updated_post.content, updated_post.is_published, str(post_id)])
+    post = cur.fetchone()
+    conn.commit()  # save data
     if not post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item was not found")
-    post.update(updated_post.dict())
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+
     return {"data": post}

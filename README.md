@@ -229,3 +229,25 @@ If the target resource does have a current representation and that representatio
 Open your browser at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) - Swagger UI
 OR
 [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) - Redoc
+
+## Working with Postgres - Psycopg
+
+Using adapter [Psycopg](https://www.psycopg.org/docs/)
+
+Installation
+
+```bash
+pip install psycopg2-binary
+```
+
+### Problems with type conversions
+
+[Documentation](https://access.crunchydata.com/documentation/psycopg2/2.7.5/faq.html)
+Exception `not all arguments converted during string formatting`
+
+```py
+cur.execute("INSERT INTO foo VALUES (%s)", "bar")    # WRONG
+cur.execute("INSERT INTO foo VALUES (%s)", ("bar"))  # WRONG
+cur.execute("INSERT INTO foo VALUES (%s)", ("bar",)) # correct
+cur.execute("INSERT INTO foo VALUES (%s)", ["bar"])  # correct
+```
