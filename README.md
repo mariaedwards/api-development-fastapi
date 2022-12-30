@@ -458,3 +458,11 @@ def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
 ```
+
+## Hashing password
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/#password-hashing)
+
+```bash
+pip install "passlib[bcrypt]"
+```
