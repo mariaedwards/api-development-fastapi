@@ -6,6 +6,7 @@ from . import models  # SQLALchemy models
 from . import schemas  # Pydantic schemas
 from sqlalchemy.orm import Session
 from .database import engine, get_db
+from typing import List
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -19,28 +20,28 @@ def root():
     return {"message": "FastAPI + SQLAlchemy"}
 
 
-@app.get("/posts")
+@app.get("/posts", response_model=List[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
-    return {"data": posts}
+    return posts
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     new_post = models.Post(**post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)  # acts as "RETURNING * " in SQL
-    return {"data": new_post}
+    return new_post
 
 
-@app.get("/posts/{post_id}")
+@app.get("/posts/{post_id}", response_model=schemas.PostResponse)
 def get_post(post_id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
-    return {"data": post}
+    return post
 
 
 @app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -54,7 +55,7 @@ def delete_post(post_id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/posts/{post_id}")
+@app.put("/posts/{post_id}", response_model=schemas.PostResponse)
 def update_post(updated_post: schemas.PostCreate, post_id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == post_id)
     if not post_query.first():
@@ -62,4 +63,4 @@ def update_post(updated_post: schemas.PostCreate, post_id: int, db: Session = De
             status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
     post_query.update(updated_post.dict(), synchronize_session=False)
     db.commit()
-    return {"data": post_query.first()}
+    return post_query.first()

@@ -389,3 +389,72 @@ def update_post(updated_post: Post, post_id: int, db: Session = Depends(get_db))
     return {"data": post_query.first()}
 
 ```
+
+## Adding Pydantic response schemas
+
+in main.py
+
+```py
+from . import schemas  # Pydantic schemas
+```
+
+in schemas.py
+
+```py
+from pydantic import BaseModel
+from datetime import datetime
+
+# Request schemas
+
+
+class PostBase(BaseModel):
+    title: str
+    content: str
+    is_published: bool = True
+
+
+class PostCreate(PostBase):
+    pass
+
+# Response schemas
+
+
+class PostResponse(PostBase):
+    id: int
+    created: datetime
+
+    class Config:
+        orm_mode = True
+
+
+```
+
+Pydantic's orm_mode will tell the Pydantic model to read the data even if it is not a dict, but an ORM model (or any other arbitrary object with attributes).
+
+### orm_mode
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/sql-databases/?h=alembic#use-pydantics-orm_mode)
+
+in main.py
+
+```py
+@app.get("/posts/{post_id}", response_model=schemas.PostResponse)
+def get_post(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+    return post
+```
+
+and for the list of posts
+
+```py
+from typing import List
+#...
+
+@app.get("/posts", response_model=List[schemas.PostResponse])
+def get_posts(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return posts
+```
