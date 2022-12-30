@@ -251,3 +251,141 @@ cur.execute("INSERT INTO foo VALUES (%s)", ("bar"))  # WRONG
 cur.execute("INSERT INTO foo VALUES (%s)", ("bar",)) # correct
 cur.execute("INSERT INTO foo VALUES (%s)", ["bar"])  # correct
 ```
+
+## ORM - SQLAlchemy
+
+[SQLAlchemy Documentation](https://docs.sqlalchemy.org/en/14/index.html)
+[FastAPI documentation](https://fastapi.tiangolo.com/tutorial/sql-databases/)
+
+### database.py
+
+```py
+"""DB management
+"""
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+
+# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
+SQLALCHEMY_DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}"
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+```
+
+### models.py
+
+```py
+"""Models for the DB
+"""
+from sqlalchemy import Column, Integer, String, Boolean, Text
+from .database import Base
+
+
+class Post(Base):
+    __tablename__ = "posts"
+    id = Column(Integer, primary_key=True, nullable=False)
+    title = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    is_published = Column(Boolean, server_default="True", nullable=False)
+
+```
+
+SQLAlchemy, via `models.Base.metadata.create_all(bind=engine)` in `main.py`, will create the table `posts` in the postgres DB (if doesn't exist) when re-running the application.
+To see the newly created table in pgAdmin: right click on `fastAPI` DB -> `refresh` - the table will appear
+
+**NOTE**: if a table already exists with the same name, any changes applied to it will not be processed. To do migrations, you need to use [Alembic](https://fastapi.tiangolo.com/tutorial/sql-databases/?h=alembic#alembic-note)
+
+### main.py
+
+```py
+from fastapi import FastAPI, status, HTTPException, Response, Depends
+from . import models
+from sqlalchemy.orm import Session
+from .database import engine, SessionLocal
+
+models.Base.metadata.create_all(bind=engine)
+
+```
+
+#### SQLAlchemy GET
+
+All
+
+```py
+@app.get("/posts")
+def get_posts(db: Session = Depends(get_db)):
+    posts = db.query(models.Post).all()
+    return {"data": posts}
+```
+
+One
+
+```py
+@app.get("/posts/{post_id}")
+# fastAPI will automatically convert string to int
+def get_post(post_id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+    return {"data": post}
+
+```
+
+#### SQLAlchemy POST
+
+```py
+@app.post("/posts", status_code=status.HTTP_201_CREATED)
+def create_post(post: Post, db: Session = Depends(get_db)):
+    new_post = models.Post(**post.dict())
+    db.add(new_post)
+    db.commit()
+    db.refresh(new_post)
+    return {"data": new_post}
+```
+
+#### SQLAlchemy DELETE
+
+```py
+
+@app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+# fastAPI will automatically convert string to int
+def delete_post(post_id: int, db: Session = Depends(get_db)):
+    post_query = db.query(models.Post).filter(models.Post.id == post_id)
+    if not post_query.first():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+    post_query.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+```
+
+#### SQLAlchemy PUT
+
+```py
+@app.put("/posts/{post_id}")
+# fastAPI will automatically convert string to int
+def update_post(updated_post: Post, post_id: int, db: Session = Depends(get_db)):
+    post_query = db.query(models.Post).filter(models.Post.id == post_id)
+    if not post_query.first():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)
+    post_query.update(updated_post.dict(), synchronize_session=False)
+    db.commit()
+    return {"data": post_query.first()}
+
+```
