@@ -1,10 +1,9 @@
 """DB management
 """
-
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,6 +24,8 @@ Base = declarative_base()
 
 
 def get_db():
+    """ Creates a database session and closes it after finishing
+    """
     db = SessionLocal()
     try:
         yield db
