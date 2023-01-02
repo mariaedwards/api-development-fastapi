@@ -1,6 +1,6 @@
 """ Pydantic schemas
 """
-
+from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
@@ -31,6 +31,18 @@ class UserCreate(UserBase):
     """ pydantic model for creating users requests
     """
 
+
+class Token(BaseModel):
+    """ pydantic model for JWT token
+    """
+    access_token: str
+    token_type: str
+
+
+class TokenPayload(BaseModel):
+    """ pydantic model for JWT token payload
+    """
+    id: Optional[str] = None
 
 # Response schemas
 
