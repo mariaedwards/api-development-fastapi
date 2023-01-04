@@ -50,6 +50,7 @@ class TokenPayload(BaseModel):
 class PostResponse(PostBase):
     """ pydantic model for post-related response
     """
+    user_id: int
     id: int
     created: datetime
 

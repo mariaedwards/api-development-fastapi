@@ -1,6 +1,6 @@
 """Models for the DB
 """
-from sqlalchemy import Column, Integer, String, Boolean, Text
+from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 
@@ -17,6 +17,10 @@ class Post(Base):
     is_published = Column(Boolean, server_default="TRUE", nullable=False)
     created = Column(TIMESTAMP(timezone=True), nullable=False,
                      server_default=text("now()"))
+    # Foreign key
+    # CASCADE option - delete all related posts if user gets deleted
+    user_id = Column(Integer, ForeignKey(
+        "users.id", ondelete="CASCADE"), nullable=False)
 
 
 class User(Base):
