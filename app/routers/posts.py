@@ -28,7 +28,7 @@ def get_posts(db: Session = Depends(get_db), _current_user: int = Depends(oauth2
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db),
-                current_user: int = Depends(oauth2.get_current_user)):
+                current_user=Depends(oauth2.get_current_user)):
     """ Creates a new post
     """
     new_post = models.Post(user_id=current_user.id, **post.dict())
@@ -40,7 +40,7 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db),
 
 @router.get("/{post_id}", response_model=schemas.PostResponse)
 def get_post(post_id: int, db: Session = Depends(get_db),
-             _current_user: int = Depends(oauth2.get_current_user)):
+             _current_user=Depends(oauth2.get_current_user)):
     """ Creates a post by id
     """
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
@@ -52,7 +52,7 @@ def get_post(post_id: int, db: Session = Depends(get_db),
 
 @router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: int, db: Session = Depends(get_db),
-                current_user: int = Depends(oauth2.get_current_user)):
+                current_user=Depends(oauth2.get_current_user)):
     """ Deletes a post with id
     """
     post_query = db.query(models.Post).filter(models.Post.id == post_id)
@@ -70,7 +70,7 @@ def delete_post(post_id: int, db: Session = Depends(get_db),
 
 @router.put("/{post_id}", response_model=schemas.PostResponse)
 def update_post(updated_post: schemas.PostCreate, post_id: int, db: Session = Depends(get_db),
-                current_user: int = Depends(oauth2.get_current_user)):
+                current_user=Depends(oauth2.get_current_user)):
     """ Updates a post with id
     """
     post_query = db.query(models.Post).filter(models.Post.id == post_id)

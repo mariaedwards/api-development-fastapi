@@ -2,6 +2,7 @@
 """
 from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 
 from .database import Base
@@ -21,6 +22,8 @@ class Post(Base):
     # CASCADE option - delete all related posts if user gets deleted
     user_id = Column(Integer, ForeignKey(
         "users.id", ondelete="CASCADE"), nullable=False)
+    # auto retrieves user
+    user = relationship("User")
 
 
 class User(Base):

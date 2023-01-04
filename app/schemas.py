@@ -47,19 +47,6 @@ class TokenPayload(BaseModel):
 # Response schemas
 
 
-class PostResponse(PostBase):
-    """ pydantic model for post-related response
-    """
-    user_id: int
-    id: int
-    created: datetime
-
-    class Config:
-        """ Allows to convert SQLAlchemy model into Pydantic model
-        """
-        orm_mode = True
-
-
 class UserResponse(BaseModel):
     """ pydantic model for user-related response
     """
@@ -71,3 +58,17 @@ class UserResponse(BaseModel):
         """ Allows to convert SQLAlchemy model into Pydantic model
         """
         orm_mode = True  # allows to convert SQLAlchemy model into Pydantic model
+
+
+class PostResponse(PostBase):
+    """ pydantic model for post-related response
+    """
+    user_id: int
+    user: UserResponse
+    id: int
+    created: datetime
+
+    class Config:
+        """ Allows to convert SQLAlchemy model into Pydantic model
+        """
+        orm_mode = True
