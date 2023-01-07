@@ -4,9 +4,9 @@ from fastapi import status, HTTPException, Depends, APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from .. import models, utils, schemas
-from ..database import get_db
-from ..oauth2 import create_access_token
+from app import models, utils, schemas
+from app.database import get_db
+from app.oauth2 import create_access_token
 
 
 MESSAGE_401 = "401 Failed authentication"
