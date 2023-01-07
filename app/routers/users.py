@@ -3,7 +3,7 @@
 from typing import List
 from fastapi import status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
-from app import models, schemas, utils
+from app import models, schemas, utils, oauth2
 from app.database import get_db
 
 
@@ -29,7 +29,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[schemas.UserResponse])
-def get_users(db: Session = Depends(get_db)):
+def get_users(db: Session = Depends(get_db), _current_user: dict = Depends(oauth2.get_current_user)):
     """ Gets all users
     """
     users = db.query(models.User).all()
@@ -37,7 +37,7 @@ def get_users(db: Session = Depends(get_db)):
 
 
 @router.get("/{user_id}", response_model=schemas.UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
+def get_user(user_id: int, db: Session = Depends(get_db), _current_user: dict = Depends(oauth2.get_current_user)):
     """ Gets a user by id
     """
     user = db.query(models.User).filter(models.User.id == user_id).first()
