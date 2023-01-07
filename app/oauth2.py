@@ -1,22 +1,18 @@
 """ Authentication module
 """
-import os
+
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from dotenv import load_dotenv
+
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from . import schemas, models
 from .database import get_db
+from .config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-load_dotenv()
-
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 MESSAGE_403 = "403 Failed authorization"
 MESSAGE_404 = "User not found"
@@ -26,9 +22,10 @@ def create_access_token(payload: dict) -> str:
     """Creates a JWT token
     """
     to_encode = payload.copy()
-    expire = datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoder_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoder_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoder_jwt
 
 
@@ -36,7 +33,8 @@ def verify_access_token(token: str, credentials_exception) -> bool:
     """Verifies a JWT token
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[
+                             settings.ALGORITHM])
         user_id = payload.get("user_id")
         if not user_id:
             raise credentials_exception

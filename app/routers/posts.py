@@ -1,13 +1,17 @@
 """ Posts related routes
 """
+
 from typing import List, Optional
 
 from fastapi import status, HTTPException, Response, Depends, APIRouter
 from sqlalchemy.orm import Session
 
-from .. import models, schemas, oauth2
-from ..database import get_db
+from app import models, schemas, oauth2
+from app.database import get_db
 
+# TODO security
+# - https://go.snyk.io/rs/677-THP-415/images/Python_Cheatsheet_whitepaper.pdf
+# - https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html
 
 router = APIRouter(
     prefix="/posts",
