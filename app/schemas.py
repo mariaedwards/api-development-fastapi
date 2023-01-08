@@ -44,6 +44,11 @@ class TokenPayload(BaseModel):
     """
     id: Optional[str] = None
 
+
+class Like(BaseModel):
+    post_id: int
+
+
 # Response schemas
 
 

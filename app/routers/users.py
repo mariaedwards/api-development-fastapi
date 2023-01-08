@@ -13,12 +13,18 @@ router = APIRouter(
 )
 
 MESSAGE_404 = "User was not found"
+MESSAGE_409 = "User with the provided email address already exists"
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """ Creates a new user
     """
+    existing_user = db.query(models.User).filter(
+        models.User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=MESSAGE_409)
     # hash password
     user.password = utils.hash_pwd(user.password)
     new_user = models.User(**user.dict())
@@ -29,7 +35,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=List[schemas.UserResponse])
-def get_users(db: Session = Depends(get_db), _current_user: dict = Depends(oauth2.get_current_user)):
+def get_users(db: Session = Depends(get_db),
+              _current_user: dict = Depends(oauth2.get_current_user)):
     """ Gets all users
     """
     users = db.query(models.User).all()
@@ -37,7 +44,8 @@ def get_users(db: Session = Depends(get_db), _current_user: dict = Depends(oauth
 
 
 @router.get("/{user_id}", response_model=schemas.UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db), _current_user: dict = Depends(oauth2.get_current_user)):
+def get_user(user_id: int, db: Session = Depends(get_db),
+             _current_user: dict = Depends(oauth2.get_current_user)):
     """ Gets a user by id
     """
     user = db.query(models.User).filter(models.User.id == user_id).first()
