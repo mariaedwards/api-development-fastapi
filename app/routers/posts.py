@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from fastapi import status, HTTPException, Response, Depends, APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from app import models, schemas, oauth2
 from app.database import get_db
@@ -22,12 +23,14 @@ MESSAGE_404 = "Post was not found"
 MESSAGE_403 = "Unauthorized access"
 
 
-@router.get("/", response_model=List[schemas.PostResponse])
+@router.get("/", response_model=List[schemas.PostResponseWithLikes])
 def get_posts(db: Session = Depends(get_db), _current_user: dict = Depends(oauth2.get_current_user),
               limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     """ Gets all posts
     """
-    posts = db.query(models.Post).filter(
+
+    posts = db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(
+        models.Like, models.Like.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(
         models.Post.title.ilike(f"%{search}%")).limit(limit).offset(skip).all()
     return posts
 
@@ -44,12 +47,13 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db),
     return new_post
 
 
-@router.get("/{post_id}", response_model=schemas.PostResponse)
+@router.get("/{post_id}", response_model=schemas.PostResponseWithLikes)
 def get_post(post_id: int, db: Session = Depends(get_db),
              _current_user: dict = Depends(oauth2.get_current_user)):
     """ Gets a post by id
     """
-    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    post = db.query(models.Post, func.count(models.Like.post_id).label("likes")).join(
+        models.Like, models.Like.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=MESSAGE_404)

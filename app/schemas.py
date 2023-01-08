@@ -77,3 +77,8 @@ class PostResponse(PostBase):
         """ Allows to convert SQLAlchemy model into Pydantic model
         """
         orm_mode = True
+
+
+class PostResponseWithLikes(BaseModel):
+    Post: PostResponse
+    likes: int
