@@ -2,11 +2,8 @@
 """
 
 from fastapi import FastAPI
-from . import models  # SQLALchemy models
-from .database import engine
 from .routers import posts, users, auth, likes
 
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
