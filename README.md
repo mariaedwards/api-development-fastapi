@@ -485,3 +485,51 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 ```
+
+## Alembic
+
+[Documentation](https://alembic.sqlalchemy.org/en/latest/front.html#installation)
+
+```bash
+pip install alembic
+```
+
+From the pproject root foloder
+
+```bash
+alembic init alembic
+```
+
+In `alembic/env.py`
+
+```py
+# add
+from app.models import Base
+from app.config import settings
+
+# add this below config = context.config
+config.set_main_option(
+    "sqlalchemy.url", f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}")
+
+# add below target_metadata = mymodel.Base.metadata
+target_metadata = Base.metadata
+```
+
+When updating SQLAlchemy models in models.py, run:
+
+```bash
+alembic revision --autogenerate -m "message (as if git commit)"
+alembic upgrade head
+```
+
+To roll back changes in DB, run
+
+```bash
+alembic downgrade SHA or -1
+```
+
+To upgrade the DB
+
+```bash
+alembic upgrade  SHA or +1 or head
+```
