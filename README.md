@@ -533,3 +533,13 @@ To upgrade the DB
 ```bash
 alembic upgrade  SHA or +1 or head
 ```
+
+## CORS
+
+[Documents](https://fastapi.tiangolo.com/tutorial/cors/?h=cor)
+
+## Requirements.txt
+
+```bash
+pip freeze > requirements.txt
+```
