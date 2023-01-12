@@ -13,6 +13,8 @@ from app.database import get_db
 # TODO security
 # - https://go.snyk.io/rs/677-THP-415/images/Python_Cheatsheet_whitepaper.pdf
 # - https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html
+# Input validation:
+# - skip, limit, ids, etc are within safe range
 
 router = APIRouter(
     prefix="/posts",
