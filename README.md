@@ -540,6 +540,22 @@ alembic upgrade  SHA or +1 or head
 
 ## Requirements.txt
 
+Create
+
 ```bash
 pip freeze > requirements.txt
 ```
+
+Install
+
+```bash
+pip install -r requirements.txt
+```
+
+## Testing
+
+```bash
+pip install pytest
+```
+
+[Documentation](https://fastapi.tiangolo.com/tutorial/testing/)
